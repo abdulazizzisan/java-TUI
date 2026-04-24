@@ -12,8 +12,11 @@
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <main.class>dev.zisan.Main</main.class>
+        <tamboui.version>0.2.0</tamboui.version>
     </properties>
 
+    <!--ADD THIS ON GRAALVM PROJECT POM.XML -->
     <build>
         <plugins>
             <!-- Tells the mvn exec:java where is the main file -->
@@ -22,7 +25,20 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.6.3</version>
                 <configuration>
-                    <mainClass>dev.zisan.Main</mainClass>
+                    <mainClass>${main.class}</mainClass>
+                </configuration>
+            </plugin>
+
+            <!--Tells GraalVM where is the main file-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>${main.class}</mainClass>
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
         </plugins>
@@ -33,7 +49,7 @@
             <dependency>
                 <groupId>dev.tamboui</groupId>
                 <artifactId>tamboui-bom</artifactId>
-                <version>0.2.0</version>
+                <version>${tamboui.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -53,5 +69,38 @@
             <artifactId>tamboui-jline3-backend</artifactId>
         </dependency>
     </dependencies>
+
+    <!--ADD THIS ON GRAALVM PROJECT POM.XML -->
+    <profiles>
+        <profile>
+            <id>native</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                        <version>0.10.3</version>
+                        <configuration>
+                            <mainClass>${main.class}</mainClass>
+                            <imageName>Tui-Practice</imageName>
+                            <buildArgs>
+                                <arg>--enable-native-access=ALL-UNNAMED</arg>
+                                <arg>-H:+ReportExceptionStackTraces</arg>
+                            </buildArgs>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>build-native</id>
+                                <goals>
+                                    <goal>compile-no-fork</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>
